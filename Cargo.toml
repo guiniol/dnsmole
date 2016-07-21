@@ -2,5 +2,7 @@
 name = "dnsmole"
 version = "0.1.0"
 authors = ["Guillaume Brogi <gui-gui@netcourrier.com>"]
+description = "a DNS tunnel server and client"
 
 [dependencies]
+clap = "2.9.2"
