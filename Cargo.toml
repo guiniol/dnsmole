@@ -1,0 +1,6 @@
+[package]
+name = "dnsmole"
+version = "0.1.0"
+authors = ["Guillaume Brogi <gui-gui@netcourrier.com>"]
+
+[dependencies]
