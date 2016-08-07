@@ -3,6 +3,9 @@ extern crate clap;
 
 use clap::{App, Arg, ArgGroup};
 
+mod server;
+mod client;
+
 
 fn main() {
     let matches = App::new(env!("CARGO_PKG_NAME"))
@@ -45,10 +48,10 @@ fn main() {
         .get_matches();
 
     if matches.is_present("serve") {
-        println!("SERVE - target: {}, listen on {}", matches.value_of("target").unwrap(), matches.value_of("port").unwrap_or("*:53"));
+        server::serve(matches.value_of("target").unwrap(), matches.value_of("port").unwrap_or("*:53"));
     }
     if matches.is_present("connect") {
-        println!("CONNECT - relay: {}, listen on {}", matches.value_of("target").unwrap(), matches.value_of("socket").unwrap_or("127.0.0.1:5353"));
+        client::connect(matches.value_of("target").unwrap(), matches.value_of("socket").unwrap_or("127.0.0.1:5353"));
     }
 }
 
