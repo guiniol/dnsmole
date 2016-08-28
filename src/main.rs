@@ -1,59 +1,49 @@
 #[macro_use]
 extern crate clap;
 
-use clap::{App, Arg, ArgGroup};
+use clap::{App, Arg, SubCommand};
 
 mod server;
 mod client;
 
 
 fn main() {
-    let matches = App::new(env!("CARGO_PKG_NAME"))
-        .version(crate_version!())
-        .author(env!("CARGO_PKG_AUTHORS"))
+    let matches = App::with_defaults(env!("CARGO_PKG_NAME"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
-        .arg(Arg::with_name("serve")
-             .help("Create a server to relay remote connections")
-             .short("s")
-             .long("serve")
-             )
-        .arg(Arg::with_name("connect")
-             .help("Connect to a dnsmole server")
-             .short("c")
-             .long("connect")
-             )
-        .group(ArgGroup::with_name("action")
-               .required(true)
-               .args(&["serve", "connect"])
-               )
-        .arg(Arg::with_name("target")
-             .help("[ip|hostname:]port to redirect to or dnsmole server to connect to")
-             .index(1)
-             .required(true)
-            )
-        .arg(Arg::with_name("port")
-             .help("port and/or interface to listen on (default 53)")
-             .short("p")
-             .long("port")
-             .takes_value(true)
-             .requires("serve")
-             .conflicts_with("connect")
-            )
-        .arg(Arg::with_name("socket")
-             .help("port and/or interface to listen on (default 5353)")
-             .short("k")
-             .long("socket")
-             .takes_value(true)
-             .requires("connect")
-             .conflicts_with("serve")
-            )
+        .subcommand(SubCommand::with_name("serve")
+                    .about("Create a server to relay remote connections")
+                    .arg(Arg::with_name("port")
+                         .help("port and/or interface to listen on (default 53)")
+                         .short("p")
+                         .long("port")
+                         .takes_value(true)
+                        )
+                    .arg(Arg::with_name("target")
+                         .help("[ip|hostname:]port to redirect to")
+                         .index(1)
+                         .required(true)
+                         )
+                    )
+        .subcommand(SubCommand::with_name("connect")
+                    .about("Connect to a dnsmole server")
+                    .arg(Arg::with_name("port")
+                         .help("port and/or interface to listen on (default 5353)")
+                         .short("p")
+                         .long("port")
+                         .takes_value(true)
+                        )
+                    .arg(Arg::with_name("relay")
+                         .help("hostname[:port] of the dnsmole relay")
+                         .index(1)
+                         .required(true)
+                         )
+                    )
         .get_matches();
 
-    if matches.is_present("serve") {
-        server::serve(matches.value_of("target").unwrap(), matches.value_of("port").unwrap_or("*:53"));
-    }
-    if matches.is_present("connect") {
-        client::connect(matches.value_of("target").unwrap(), matches.value_of("socket").unwrap_or("127.0.0.1:5353"));
+    match matches.subcommand() {
+        ("serve",   Some(submatch)) => server::serve(submatch.value_of("target").unwrap(), submatch.value_of("port").unwrap_or("*:53")),
+        ("connect", Some(submatch)) => client::connect(submatch.value_of("relay").unwrap(), submatch.value_of("port").unwrap_or("127.0.0.1:5353")),
+        _                           => println!("Error"),
     }
 }
 
